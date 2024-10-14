@@ -3,7 +3,6 @@ package com.dupernite.bossTimer.client;
 import com.dupernite.bossTimer.client.components.HudComponent;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
 
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class HudRenderer implements HudRenderCallback {
     }
 
     @Override
-    public void onHudRender(DrawContext drawContext, RenderTickCounter renderTickCounter) {
+    public void onHudRender(DrawContext drawContext, float v) {
         if (!hudVisible) {
             return;
         }
@@ -62,7 +61,7 @@ public class HudRenderer implements HudRenderCallback {
                     break;
             }
 
-            component.render(drawContext, renderTickCounter, x, y);
+            component.render(drawContext, x, y);
         }
     }
 }

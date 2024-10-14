@@ -2,7 +2,6 @@ package com.dupernite.bossTimer.client.components;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
 
 public abstract class HudComponent {
 
@@ -16,7 +15,7 @@ public abstract class HudComponent {
         this.padding = padding;
     }
 
-    public abstract void render(DrawContext drawContext, RenderTickCounter renderTickCounter, int x, int y);
+    public abstract void render(DrawContext drawContext, int x, int y);
 
     public abstract int getWidth();
 }

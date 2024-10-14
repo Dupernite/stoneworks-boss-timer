@@ -2,7 +2,6 @@ package com.dupernite.bossTimer.client.components;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.text.Text;
 
 public class BossTimerComponent extends HudComponent {
@@ -35,7 +34,7 @@ public class BossTimerComponent extends HudComponent {
     }
 
     @Override
-    public void render(DrawContext drawContext, RenderTickCounter renderTickCounter, int x, int y) {
+    public void render(DrawContext drawContext, int x, int y) {
         if (!timerStarted) {
             return;
         }
