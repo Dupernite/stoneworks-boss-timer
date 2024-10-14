@@ -13,7 +13,7 @@ import java.util.List;
 public class BossNameComponent extends HudComponent {
 
     private final List<Text> bossNames;
-    private int currentBossIndex;
+    public int currentBossIndex;
     private int width;
     private long startTime;
 
@@ -28,6 +28,10 @@ public class BossNameComponent extends HudComponent {
             Text.literal("Wither/Blaze King").styled(style -> style.withColor(TextColor.fromFormatting(Formatting.DARK_RED)))
         );
         this.currentBossIndex = 0;
+    }
+
+    public List<Text> getBossNames() {
+        return bossNames;
     }
 
     public void nextBoss() {
@@ -45,6 +49,15 @@ public class BossNameComponent extends HudComponent {
     public void setStartTime(long startTime) {
         this.startTime = startTime;
         updateCurrentBoss();
+    }
+
+    public void setCurrentBoss(String bossName) {
+        for (int i = 0; i < bossNames.size(); i++) {
+            if (bossNames.get(i).getString().equals(bossName)) {
+                currentBossIndex = i;
+                break;
+            }
+        }
     }
 
     private void updateCurrentBoss() {

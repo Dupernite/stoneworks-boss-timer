@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 public class BossTimerComponent extends HudComponent {
 
     private static final int TIMER_DURATION = 40 * 60 * 1000;
-    private long endTime;
+    public long endTime;
     private int width;
     public boolean timerStarted;
     private final BossNameComponent bossNameComponent;
@@ -19,8 +19,8 @@ public class BossTimerComponent extends HudComponent {
         this.bossNameComponent = bossNameComponent;
     }
 
-    public void startTimer() {
-        this.endTime = System.currentTimeMillis() + TIMER_DURATION;
+    public void startTimer(long spawnTime) {
+        this.endTime = System.currentTimeMillis() + spawnTime;
         this.timerStarted = true;
     }
 
@@ -47,7 +47,7 @@ public class BossTimerComponent extends HudComponent {
         if (remainingTime < 0) {
             remainingTime = 0;
             bossNameComponent.nextBoss();
-            startTimer();
+            startTimer(TIMER_DURATION);
         }
 
         int minutes = (int) (remainingTime / 60000);

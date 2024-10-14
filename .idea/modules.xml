@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/boss-timer.main.iml" filepath="$PROJECT_DIR$/.idea/modules/boss-timer.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/boss-timer.test.iml" filepath="$PROJECT_DIR$/.idea/modules/boss-timer.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/stoneworks-boss-timer.main.iml" filepath="$PROJECT_DIR$/.idea/modules/stoneworks-boss-timer.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/stoneworks-boss-timer.test.iml" filepath="$PROJECT_DIR$/.idea/modules/stoneworks-boss-timer.test.iml" />
     </modules>
   </component>
 </project>

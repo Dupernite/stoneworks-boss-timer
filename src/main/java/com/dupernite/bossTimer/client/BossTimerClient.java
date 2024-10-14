@@ -4,10 +4,12 @@ import com.dupernite.bossTimer.client.components.BossNameComponent;
 import com.dupernite.bossTimer.client.components.BossTimerComponent;
 import com.dupernite.bossTimer.client.components.Corner;
 import com.dupernite.bossTimer.client.components.HudComponent;
+import com.dupernite.bossTimer.client.screens.BossSelectionScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -61,7 +63,6 @@ public class BossTimerClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world != null && !bossTimerComponent.timerStarted) {
                 loadTimestamp();
-                bossTimerComponent.startTimer();
             }
 
             while (toggleHudKey.wasPressed()) {
@@ -70,9 +71,7 @@ public class BossTimerClient implements ClientModInitializer {
             }
 
             while (restartTimerKey.wasPressed()) {
-                saveTimestamp();
-                bossNameComponent.reset();
-                bossTimerComponent.reset();
+                client.setScreen(new BossSelectionScreen(bossNameComponent, bossTimerComponent, FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE)));
             }
 
             while (changePositionKey.wasPressed()) {
@@ -80,25 +79,38 @@ public class BossTimerClient implements ClientModInitializer {
                 bossNameComponent.changePosition();
             }
         });
-    }
 
-    private void saveTimestamp() {
-        try {
-            long timestamp = System.currentTimeMillis();
-            Path path = FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE);
-            Files.write(path, String.valueOf(timestamp).getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> saveTimestamp());
     }
 
     private void loadTimestamp() {
         try {
             Path path = FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE);
             if (Files.exists(path)) {
-                long timestamp = Long.parseLong(new String(Files.readAllBytes(path)));
-                bossNameComponent.setStartTime(timestamp);
+                String content = new String(Files.readAllBytes(path));
+                String[] parts = content.split(":");
+                if (parts.length == 2) {
+                    String bossName = parts[0];
+                    long timestamp = Long.parseLong(parts[1]);
+                    bossNameComponent.setCurrentBoss(bossName);
+                    bossNameComponent.setStartTime(timestamp);
+                    bossTimerComponent.startTimer(timestamp - System.currentTimeMillis());
+                } else {
+                    System.err.println("Invalid timestamp file format");
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveTimestamp() {
+        try {
+            Path path = FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE);
+            String bossName = bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString();
+            long timestamp = bossTimerComponent.endTime;
+            String content = bossName + ":" + timestamp;
+            Files.write(path, content.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
