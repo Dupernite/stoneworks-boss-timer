@@ -15,6 +15,7 @@ public class BossNameComponent extends HudComponent {
     public int currentBossIndex;
     private int width;
     private long startTime;
+    private boolean timerStarted;
 
     public BossNameComponent(Corner corner, int padding) {
         super(corner, padding);
@@ -27,6 +28,7 @@ public class BossNameComponent extends HudComponent {
             Text.literal("Wither/Blaze King").styled(style -> style.withColor(TextColor.fromFormatting(Formatting.DARK_RED)))
         );
         this.currentBossIndex = 0;
+        this.timerStarted = false;
     }
 
     public List<Text> getBossNames() {
@@ -47,6 +49,7 @@ public class BossNameComponent extends HudComponent {
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;
+        this.timerStarted = true;
         updateCurrentBoss();
     }
 
@@ -67,6 +70,10 @@ public class BossNameComponent extends HudComponent {
 
     @Override
     public void render(DrawContext drawContext, int x, int y) {
+        if (!timerStarted) {
+            return;
+        }
+
         TextRenderer textRenderer = client.textRenderer;
         Text bossName = bossNames.get(currentBossIndex);
         Text text = Text.literal("Name: ").append(bossName);
@@ -86,5 +93,4 @@ public class BossNameComponent extends HudComponent {
     public int getWidth() {
         return width;
     }
-
 }

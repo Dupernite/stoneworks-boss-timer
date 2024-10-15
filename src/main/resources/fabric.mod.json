@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "id": "boss-timer",
   "version": "${version}",
-  "name": "boss-timer",
-  "description": "A simple mod that adds a Boss Timer to the HUD",
+  "name": "Stoneworks Boss Timer",
+  "description": "A simple QoL mod for Stoneworks Nether that adds a Boss Timer to the HUD",
   "authors": ["DuperKnight"],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/boss-timer/icon.png",
+  "icon": "assets/bosstimer/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
@@ -26,3 +26,5 @@
     "minecraft": ">=1.20 <=1.20.6"
   }
 }
+
+

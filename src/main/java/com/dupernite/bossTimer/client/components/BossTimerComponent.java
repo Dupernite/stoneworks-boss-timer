@@ -3,6 +3,7 @@ package com.dupernite.bossTimer.client.components;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 public class BossTimerComponent extends HudComponent {
 
@@ -40,24 +41,26 @@ public class BossTimerComponent extends HudComponent {
 
     @Override
     public void render(DrawContext drawContext, int x, int y) {
-        if (!timerStarted) {
-            return;
-        }
-
         TextRenderer textRenderer = client.textRenderer;
-        long currentTime = System.currentTimeMillis();
-        long remainingTime = endTime - currentTime;
+        Text text;
 
-        if (remainingTime < 0) {
-            remainingTime = 0;
-            bossNameComponent.nextBoss();
-            startTimer(TIMER_DURATION);
+        if (!timerStarted) {
+            text = Text.literal("Press the setup key to setup the timer").styled(style -> style.withColor(Formatting.RED));
+        } else {
+            long currentTime = System.currentTimeMillis();
+            long remainingTime = endTime - currentTime;
+
+            if (remainingTime < 0) {
+                remainingTime = 0;
+                bossNameComponent.nextBoss();
+                startTimer(TIMER_DURATION);
+            }
+
+            int minutes = (int) (remainingTime / 60000);
+            int seconds = (int) ((remainingTime / 1000) % 60);
+            String timeString = String.format("Boss Timer: %02d:%02d", minutes, seconds);
+            text = Text.of(timeString);
         }
-
-        int minutes = (int) (remainingTime / 60000);
-        int seconds = (int) ((remainingTime / 1000) % 60);
-        String timeString = String.format("Boss Timer: %02d:%02d", minutes, seconds);
-        Text text = Text.of(timeString);
 
         int textWidth = textRenderer.getWidth(text);
         int textHeight = textRenderer.fontHeight;
@@ -74,5 +77,4 @@ public class BossTimerComponent extends HudComponent {
     public int getWidth() {
         return width;
     }
-
 }

@@ -31,7 +31,7 @@ public class BossTimerClient implements ClientModInitializer {
     private static final KeyBinding toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.toggleHud",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_H,
+        GLFW.GLFW_KEY_Z,
         "category.bossTimer"
     ));
 
@@ -45,14 +45,14 @@ public class BossTimerClient implements ClientModInitializer {
     private static final KeyBinding restartTimerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.restartTimer",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_T,
+        GLFW.GLFW_KEY_X,
         "category.bossTimer"
     ));
 
     private static final KeyBinding changePositionKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.changePosition",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_P,
+        GLFW.GLFW_KEY_C,
         "category.bossTimer"
     ));
 
@@ -82,8 +82,10 @@ public class BossTimerClient implements ClientModInitializer {
             }
 
             while (restartTimerKey.wasPressed()) {
-                bossTimerComponent.restartTimer();
-                saveTimestamp();
+                if (bossTimerComponent.timerStarted) {
+                    bossTimerComponent.restartTimer();
+                    saveTimestamp();
+                }
             }
 
             while (changePositionKey.wasPressed()) {
@@ -105,10 +107,7 @@ public class BossTimerClient implements ClientModInitializer {
                     String bossName = parts[0];
                     long timestamp = Long.parseLong(parts[1]);
                     bossNameComponent.setCurrentBoss(bossName);
-                    bossNameComponent.setStartTime(timestamp);
                     bossTimerComponent.startTimer(timestamp - System.currentTimeMillis());
-                } else {
-                    System.err.println("Invalid timestamp file format");
                 }
             }
         } catch (IOException e) {
