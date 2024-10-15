@@ -36,18 +36,15 @@ public class BossSelectionScreen extends Screen {
         int width = this.width / 2 - 100;
         int height = this.height / 2 - 50;
 
-        // Boss selection button
         ButtonWidget bossButton = ButtonWidget.builder(bossNameComponent.getBossNames().get(currentBossIndex), button -> {
             currentBossIndex = (currentBossIndex + 1) % bossNameComponent.getBossNames().size();
             button.setMessage(bossNameComponent.getBossNames().get(currentBossIndex));
         }).dimensions(width, height, 200, 20).build();
         this.addDrawableChild(bossButton);
 
-        // Time input field
         spawnTimeField = new TextFieldWidget(this.textRenderer, width, height + 40, 200, 20, Text.literal("Spawn Time (MM:SS)"));
         this.addSelectableChild(spawnTimeField);
 
-        // Submit button
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Submit"), button -> {
             String bossName = bossNameComponent.getBossNames().get(currentBossIndex).getString();
             String input = spawnTimeField.getText();
@@ -59,7 +56,7 @@ public class BossSelectionScreen extends Screen {
                 bossTimerComponent.startTimer(spawnTime);
                 this.client.setScreen(null);
             } else {
-                errorMessage = Text.literal("Invalid time format! Please use MM:SS.").styled(style -> style.withColor(Formatting.RED));
+                errorMessage = Text.literal("Invalid time format! Please use MM:SS. (example: 30:00)").styled(style -> style.withColor(Formatting.RED));
             }
         }).dimensions(width, height + 70, 200, 20).build());
     }

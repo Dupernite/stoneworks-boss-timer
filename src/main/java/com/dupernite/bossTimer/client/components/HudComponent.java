@@ -19,5 +19,4 @@ public abstract class HudComponent {
 
     public abstract int getWidth();
 
-    public abstract int getHeight();
 }

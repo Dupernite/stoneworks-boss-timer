@@ -27,7 +27,6 @@ public class HudRenderer implements HudRenderCallback {
         }
 
         int screenWidth = drawContext.getScaledWindowWidth();
-        int screenHeight = drawContext.getScaledWindowHeight();
 
         int topLeftY = 0;
         int topRightY = 0;

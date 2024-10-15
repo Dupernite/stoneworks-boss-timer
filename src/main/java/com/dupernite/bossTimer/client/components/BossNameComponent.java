@@ -78,7 +78,6 @@ public class BossNameComponent extends HudComponent {
         int backgroundColor = 0x80000000;
         drawContext.fill(x - padding, y - padding - 1, x + textWidth + padding - 1, y + textHeight + padding - 1, backgroundColor);
 
-        // Draw the text
         drawContext.drawText(textRenderer, text, x, y, 0xFFFFFF, false);
         width = textWidth + 1;
     }
@@ -88,8 +87,4 @@ public class BossNameComponent extends HudComponent {
         return width;
     }
 
-    @Override
-    public int getHeight() {
-        return client.textRenderer.fontHeight + 1;
-    }
 }
