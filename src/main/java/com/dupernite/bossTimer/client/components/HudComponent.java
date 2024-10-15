@@ -18,4 +18,6 @@ public abstract class HudComponent {
     public abstract void render(DrawContext drawContext, int x, int y);
 
     public abstract int getWidth();
+
+    public abstract int getHeight();
 }

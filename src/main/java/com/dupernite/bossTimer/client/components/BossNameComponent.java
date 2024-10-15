@@ -87,4 +87,9 @@ public class BossNameComponent extends HudComponent {
     public int getWidth() {
         return width;
     }
+
+    @Override
+    public int getHeight() {
+        return client.textRenderer.fontHeight + 1;
+    }
 }

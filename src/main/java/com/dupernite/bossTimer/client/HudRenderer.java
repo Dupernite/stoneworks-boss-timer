@@ -31,8 +31,6 @@ public class HudRenderer implements HudRenderCallback {
 
         int topLeftY = 0;
         int topRightY = 0;
-        int bottomLeftY = screenHeight;
-        int bottomRightY = screenHeight;
 
         for (HudComponent component : hudComponents) {
             int x = component.padding;
@@ -47,15 +45,6 @@ public class HudRenderer implements HudRenderCallback {
                     x = screenWidth - component.padding - component.getWidth();
                     y = topRightY + component.padding;
                     topRightY = y + component.padding;
-                    break;
-                case BOTTOM_LEFT:
-                    y = bottomLeftY - component.padding - component.client.textRenderer.fontHeight - 10;
-                    bottomLeftY = y - component.padding;
-                    break;
-                case BOTTOM_RIGHT:
-                    x = screenWidth - component.padding - component.getWidth();
-                    y = bottomRightY - component.padding - component.client.textRenderer.fontHeight - 10;
-                    bottomRightY = y - component.padding;
                     break;
                 default:
                     break;

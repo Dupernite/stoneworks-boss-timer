@@ -29,6 +29,11 @@ public class BossTimerComponent extends HudComponent {
         bossNameComponent.reset();
     }
 
+    public void restartTimer() {
+        this.endTime = System.currentTimeMillis() + TIMER_DURATION;
+        this.timerStarted = true;
+    }
+
     public void changePosition() {
         this.corner = Corner.values()[(this.corner.ordinal() + 1) % Corner.values().length];
     }
@@ -69,5 +74,11 @@ public class BossTimerComponent extends HudComponent {
     @Override
     public int getWidth() {
         return width;
+    }
+
+    // Implement this method
+    @Override
+    public int getHeight() {
+        return client.textRenderer.fontHeight + 1;
     }
 }

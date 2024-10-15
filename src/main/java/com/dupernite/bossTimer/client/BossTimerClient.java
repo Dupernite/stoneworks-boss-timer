@@ -26,7 +26,7 @@ public class BossTimerClient implements ClientModInitializer {
     private BossNameComponent bossNameComponent;
     private boolean hudVisible = true;
     private static final String TIMESTAMP_FILE = "boss_timer_timestamp.txt";
-    private HudRenderer hudRenderer;
+    private HudRenderer hudRenderer120;
 
     private static final KeyBinding toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.toggleHud",
@@ -35,10 +35,17 @@ public class BossTimerClient implements ClientModInitializer {
         "category.bossTimer"
     ));
 
+    private static final KeyBinding setupTimerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        "key.bossTimer.setupTimer",
+        InputUtil.Type.KEYSYM,
+        GLFW.GLFW_KEY_R,
+        "category.bossTimer"
+    ));
+
     private static final KeyBinding restartTimerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.restartTimer",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_R,
+        GLFW.GLFW_KEY_T,
         "category.bossTimer"
     ));
 
@@ -57,8 +64,8 @@ public class BossTimerClient implements ClientModInitializer {
         hudComponents.add(bossTimerComponent);
         hudComponents.add(bossNameComponent);
 
-        hudRenderer = new HudRenderer(hudComponents, hudVisible);
-        HudRenderCallback.EVENT.register(hudRenderer);
+        hudRenderer120 = new HudRenderer(hudComponents, hudVisible);
+        HudRenderCallback.EVENT.register(hudRenderer120);
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world != null && !bossTimerComponent.timerStarted) {
@@ -67,11 +74,16 @@ public class BossTimerClient implements ClientModInitializer {
 
             while (toggleHudKey.wasPressed()) {
                 hudVisible = !hudVisible;
-                hudRenderer.setHudVisible(hudVisible);
+                hudRenderer120.setHudVisible(hudVisible);
+            }
+
+            while (setupTimerKey.wasPressed()) {
+                client.setScreen(new BossSelectionScreen(bossNameComponent, bossTimerComponent, FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE)));
             }
 
             while (restartTimerKey.wasPressed()) {
-                client.setScreen(new BossSelectionScreen(bossNameComponent, bossTimerComponent, FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE)));
+                bossTimerComponent.restartTimer();
+                saveTimestamp();
             }
 
             while (changePositionKey.wasPressed()) {

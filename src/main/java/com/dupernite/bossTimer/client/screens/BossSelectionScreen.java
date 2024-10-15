@@ -20,6 +20,7 @@ public class BossSelectionScreen extends Screen {
     private TextFieldWidget spawnTimeField;
     private final Path timestampFilePath;
     private int currentBossIndex;
+    private Text errorMessage;
 
     public BossSelectionScreen(BossNameComponent bossNameComponent, BossTimerComponent bossTimerComponent, Path timestampFilePath) {
         super(Text.literal("Next Boss Spawn Selection").styled(style -> style.withColor(Formatting.DARK_RED)));
@@ -27,6 +28,7 @@ public class BossSelectionScreen extends Screen {
         this.bossTimerComponent = bossTimerComponent;
         this.timestampFilePath = timestampFilePath;
         this.currentBossIndex = 0;
+        this.errorMessage = Text.literal("");
     }
 
     @Override
@@ -48,13 +50,28 @@ public class BossSelectionScreen extends Screen {
         // Submit button
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Submit"), button -> {
             String bossName = bossNameComponent.getBossNames().get(currentBossIndex).getString();
-            String[] timeParts = spawnTimeField.getText().split(":");
-            long spawnTime = (Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1])) * 1000L;
-            saveTimestamp(bossName, spawnTime);
-            bossNameComponent.setCurrentBoss(bossName);
-            bossTimerComponent.startTimer(spawnTime);
-            this.client.setScreen(null);
+            String input = spawnTimeField.getText();
+            if (isValidTimeFormat(input)) {
+                String[] timeParts = input.split(":");
+                long spawnTime = (Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1])) * 1000L;
+                saveTimestamp(bossName, spawnTime);
+                bossNameComponent.setCurrentBoss(bossName);
+                bossTimerComponent.startTimer(spawnTime);
+                this.client.setScreen(null);
+            } else {
+                errorMessage = Text.literal("Invalid time format! Please use MM:SS.").styled(style -> style.withColor(Formatting.RED));
+            }
         }).dimensions(width, height + 70, 200, 20).build());
+    }
+
+    private boolean isValidTimeFormat(String input) {
+        if (input.matches("\\d{1,2}:\\d{2}")) {
+            String[] parts = input.split(":");
+            int minutes = Integer.parseInt(parts[0]);
+            int seconds = Integer.parseInt(parts[1]);
+            return seconds < 60;
+        }
+        return false;
     }
 
     private void saveTimestamp(String bossName, long spawnTime) {
@@ -75,5 +92,8 @@ public class BossSelectionScreen extends Screen {
         drawContext.drawText(this.textRenderer, Text.literal("Select Boss:"), this.width / 2 - 100, this.height / 2 - 60, 0xFFFFFF, false);
         drawContext.drawText(this.textRenderer, Text.literal("Spawn Time (MM:SS):"), this.width / 2 - 100, this.height / 2 - 20, 0xFFFFFF, false);
         spawnTimeField.render(drawContext, mouseX, mouseY, delta);
+        if (!errorMessage.getString().isEmpty()) {
+            drawContext.drawText(this.textRenderer, errorMessage, this.width / 2 - this.textRenderer.getWidth(errorMessage) / 2, this.height / 2 + 100, 0xFFFFFF, false);
+        }
     }
 }

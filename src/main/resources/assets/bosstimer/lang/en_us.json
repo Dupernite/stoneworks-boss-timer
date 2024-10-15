@@ -1,5 +1,6 @@
 {
   "key.bossTimer.toggleHud": "Toggle HUD",
+  "key.bossTimer.setupTimer": "Setup Timer",
   "key.bossTimer.restartTimer": "Restart Timer",
   "key.bossTimer.changePosition": "Change Position",
   "category.bossTimer": "StoneWorks Boss Timer"
