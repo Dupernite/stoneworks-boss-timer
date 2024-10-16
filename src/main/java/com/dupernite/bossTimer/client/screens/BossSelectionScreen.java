@@ -83,7 +83,7 @@ public class BossSelectionScreen extends Screen {
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        this.renderBackground(drawContext, mouseX, mouseY, delta);
+        this.renderBackground(drawContext);
         super.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawText(this.textRenderer, this.title, this.width / 2 - this.textRenderer.getWidth(this.title) / 2, 20, 0xFFFFFF, false);
         drawContext.drawText(this.textRenderer, Text.literal("Select Boss:"), this.width / 2 - 100, this.height / 2 - 60, 0xFFFFFF, false);
