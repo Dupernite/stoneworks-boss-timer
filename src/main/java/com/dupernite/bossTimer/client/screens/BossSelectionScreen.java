@@ -1,5 +1,6 @@
 package com.dupernite.bossTimer.client.screens;
 
+import com.dupernite.bossTimer.client.BossTimerClient;
 import com.dupernite.bossTimer.client.components.BossNameComponent;
 import com.dupernite.bossTimer.client.components.BossTimerComponent;
 import net.minecraft.client.gui.DrawContext;
@@ -12,6 +13,7 @@ import net.minecraft.util.Formatting;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 public class BossSelectionScreen extends Screen {
 
@@ -19,14 +21,16 @@ public class BossSelectionScreen extends Screen {
     private final BossTimerComponent bossTimerComponent;
     private TextFieldWidget spawnTimeField;
     private final Path timestampFilePath;
+    private final BossTimerClient bossTimerClient;
     private int currentBossIndex;
     private Text errorMessage;
 
-    public BossSelectionScreen(BossNameComponent bossNameComponent, BossTimerComponent bossTimerComponent, Path timestampFilePath) {
+    public BossSelectionScreen(BossNameComponent bossNameComponent, BossTimerComponent bossTimerComponent, Path timestampFilePath, BossTimerClient bossTimerClient) {
         super(Text.literal("Next Boss Spawn Selection").styled(style -> style.withColor(Formatting.DARK_RED)));
         this.bossNameComponent = bossNameComponent;
         this.bossTimerComponent = bossTimerComponent;
         this.timestampFilePath = timestampFilePath;
+        this.bossTimerClient = bossTimerClient;
         this.currentBossIndex = 0;
         this.errorMessage = Text.literal("");
     }
@@ -72,13 +76,10 @@ public class BossSelectionScreen extends Screen {
     }
 
     private void saveTimestamp(String bossName, long spawnTime) {
-        try {
-            String content = bossName + ":" + spawnTime;
-            Files.write(timestampFilePath, content.getBytes());
-            bossNameComponent.setStartTime(spawnTime);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        long endTime = System.currentTimeMillis() + spawnTime;
+        bossTimerComponent.setEndTime(endTime);
+        bossTimerClient.saveTimestamp(bossName, endTime);
+        bossNameComponent.setStartTime(endTime);
     }
 
     @Override

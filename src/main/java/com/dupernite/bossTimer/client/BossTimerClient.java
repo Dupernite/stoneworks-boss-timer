@@ -27,12 +27,13 @@ public class BossTimerClient implements ClientModInitializer {
     private BossNameComponent bossNameComponent;
     private boolean hudVisible = true;
     private static final String CONFIG_FILE = "boss_timer_config.txt";
+    private static final String TIMESTAMP_FILE = "boss_timer_timestamp.txt";
     private HudRenderer hudRenderer120;
 
     private static final KeyBinding toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.toggleHud",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_H,
+        GLFW.GLFW_KEY_Z,
         "category.bossTimer"
     ));
 
@@ -46,14 +47,14 @@ public class BossTimerClient implements ClientModInitializer {
     private static final KeyBinding restartTimerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.restartTimer",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_T,
+        GLFW.GLFW_KEY_X,
         "category.bossTimer"
     ));
 
     private static final KeyBinding changePositionKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.bossTimer.changePosition",
         InputUtil.Type.KEYSYM,
-        GLFW.GLFW_KEY_P,
+        GLFW.GLFW_KEY_C,
         "category.bossTimer"
     ));
 
@@ -68,8 +69,6 @@ public class BossTimerClient implements ClientModInitializer {
         hudRenderer120 = new HudRenderer(hudComponents, hudVisible);
         HudRenderCallback.EVENT.register(hudRenderer120);
 
-        loadConfig();
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world != null && !bossTimerComponent.timerStarted) {
                 loadTimestamp();
@@ -81,13 +80,13 @@ public class BossTimerClient implements ClientModInitializer {
             }
 
             while (setupTimerKey.wasPressed()) {
-                client.setScreen(new BossSelectionScreen(bossNameComponent, bossTimerComponent, FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE)));
+                client.setScreen(new BossSelectionScreen(bossNameComponent, bossTimerComponent, FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE), this));
             }
 
             while (restartTimerKey.wasPressed()) {
                 if (bossTimerComponent.timerStarted) {
                     bossTimerComponent.restartTimer();
-                    saveTimestamp();
+                    saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), bossTimerComponent.endTime);
                 }
             }
 
@@ -98,59 +97,110 @@ public class BossTimerClient implements ClientModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> saveTimestamp());
+        ClientTickEvents.START_WORLD_TICK.register(world -> checkAndCreateConfig());
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), bossTimerComponent.endTime));
+    }
+
+    private void checkAndCreateConfig() {
+        Path configPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
+        if (!Files.exists(configPath)) {
+            try {
+                Files.createDirectories(configPath.getParent());
+                Files.createFile(configPath);
+                Properties properties = new Properties();
+                properties.setProperty("timerPosition", Corner.TOP_LEFT.name());
+                properties.setProperty("namePosition", Corner.TOP_LEFT.name());
+                properties.setProperty("hudVisible", Boolean.toString(true));
+                properties.setProperty("timerSetup", Boolean.toString(false));
+                properties.store(Files.newOutputStream(configPath), null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void loadTimestamp() {
         try {
-            Path path = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
-            if (Files.exists(path)) {
+            Path timestampPath = FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE);
+            if (Files.exists(timestampPath)) {
                 Properties properties = new Properties();
-                properties.load(Files.newInputStream(path));
+                properties.load(Files.newInputStream(timestampPath));
                 String bossName = properties.getProperty("bossName");
-                long endTime = Long.parseLong(properties.getProperty("endTime"));
-                bossNameComponent.setCurrentBoss(bossName);
-                bossTimerComponent.setEndTime(endTime);
-                bossTimerComponent.calculateRemainingTime();
+                String endTimeStr = properties.getProperty("endTime");
+
+                if (bossName != null && endTimeStr != null) {
+                    long endTime = Long.parseLong(endTimeStr);
+                    long currentTime = System.currentTimeMillis();
+                    long elapsedTime = currentTime - endTime;
+
+                    if (elapsedTime < 0) {
+                        // Timer is still running
+                        bossNameComponent.setCurrentBoss(bossName);
+                        bossTimerComponent.setEndTime(endTime);
+                        bossTimerComponent.calculateRemainingTime();
+                    } else {
+                        // Timer has expired, calculate elapsed cycles
+                        int elapsedCycles = (int) (elapsedTime / (40 * 60 * 1000));
+                        bossNameComponent.updateCurrentBoss(elapsedCycles + 1);
+                        long newRemainingTime = 40 * 60 * 1000 - (elapsedTime % (40 * 60 * 1000));
+                        bossTimerComponent.startTimer(newRemainingTime);
+                    }
+                } else {
+                    System.err.println("bossName or endTime is null in the timestamp file.");
+                }
             }
-        } catch (IOException e) {
+        } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
     }
 
-    public void saveTimestamp() {
+    public void saveConfig() {
         try {
-            Path path = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
-            Properties properties = new Properties();
-            properties.setProperty("bossName", bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString());
-            properties.setProperty("endTime", Long.toString(bossTimerComponent.endTime));
-            properties.store(Files.newOutputStream(path), null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadConfig() {
-        try {
-            Path path = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
-            if (Files.exists(path)) {
-                Properties properties = new Properties();
-                properties.load(Files.newInputStream(path));
-                bossTimerComponent.corner = Corner.valueOf(properties.getProperty("timerPosition", "TOP_LEFT"));
-                bossNameComponent.corner = Corner.valueOf(properties.getProperty("namePosition", "TOP_LEFT"));
+            Path configPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
+            if (!Files.exists(configPath)) {
+                Files.createDirectories(configPath.getParent());
+                Files.createFile(configPath);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void saveConfig() {
-        try {
-            Path path = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
             Properties properties = new Properties();
             properties.setProperty("timerPosition", bossTimerComponent.corner.name());
             properties.setProperty("namePosition", bossNameComponent.corner.name());
-            properties.store(Files.newOutputStream(path), null);
+            properties.setProperty("hudVisible", Boolean.toString(hudVisible));
+            properties.setProperty("timerSetup", Boolean.toString(bossTimerComponent.isTimerSetup()));
+            properties.store(Files.newOutputStream(configPath), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveTimestamp(String bossName, long endTime) {
+        try {
+            Path timestampPath = FabricLoader.getInstance().getConfigDir().resolve(TIMESTAMP_FILE);
+            if (!Files.exists(timestampPath)) {
+                Files.createDirectories(timestampPath.getParent());
+                Files.createFile(timestampPath);
+            }
+            Properties properties = new Properties();
+            properties.setProperty("bossName", bossName);
+            properties.setProperty("endTime", Long.toString(endTime));
+            properties.store(Files.newOutputStream(timestampPath), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadConfig() {
+        try {
+            Path configPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
+            if (Files.exists(configPath)) {
+                Properties properties = new Properties();
+                properties.load(Files.newInputStream(configPath));
+                bossTimerComponent.corner = Corner.valueOf(properties.getProperty("timerPosition", "TOP_LEFT"));
+                bossNameComponent.corner = Corner.valueOf(properties.getProperty("namePosition", "TOP_LEFT"));
+                hudVisible = Boolean.parseBoolean(properties.getProperty("hudVisible", "true"));
+                bossTimerComponent.setTimerSetup(Boolean.parseBoolean(properties.getProperty("timerSetup", "false")));
+                hudRenderer120.setHudVisible(hudVisible);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

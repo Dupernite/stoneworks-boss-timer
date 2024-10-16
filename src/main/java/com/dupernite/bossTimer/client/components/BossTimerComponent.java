@@ -14,30 +14,41 @@ public class BossTimerComponent extends HudComponent {
     public boolean timerStarted;
     private final BossNameComponent bossNameComponent;
     private final BossTimerClient bossTimerClient;
+    private boolean timerSetup;
 
     public BossTimerComponent(Corner corner, int padding, BossNameComponent bossNameComponent, BossTimerClient bossTimerClient) {
         super(corner, padding);
         this.timerStarted = false;
         this.bossNameComponent = bossNameComponent;
         this.bossTimerClient = bossTimerClient;
+        this.timerSetup = false;
+    }
+
+    public void setTimerSetup(boolean timerSetup) {
+        this.timerSetup = timerSetup;
+    }
+
+    public boolean isTimerSetup() {
+        return timerSetup;
     }
 
     public void startTimer(long spawnTime) {
         this.endTime = System.currentTimeMillis() + spawnTime;
         this.timerStarted = true;
+        this.timerSetup = true;
     }
 
     public void reset() {
         this.endTime = System.currentTimeMillis() + TIMER_DURATION;
         this.timerStarted = true;
         bossNameComponent.reset();
-        bossTimerClient.saveTimestamp();
+        bossTimerClient.saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), endTime);
     }
 
     public void restartTimer() {
         this.endTime = System.currentTimeMillis() + TIMER_DURATION;
         this.timerStarted = true;
-        bossTimerClient.saveTimestamp();
+        bossTimerClient.saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), endTime);
     }
 
     public void changePosition() {
@@ -45,8 +56,12 @@ public class BossTimerComponent extends HudComponent {
     }
 
     public void setEndTime(long endTime) {
-        this.endTime = endTime;
-        this.timerStarted = true;
+        if (endTime > System.currentTimeMillis()) {
+            this.endTime = endTime;
+            this.timerStarted = true;
+        } else {
+            this.timerStarted = false;
+        }
     }
 
     public void calculateRemainingTime() {
@@ -56,7 +71,7 @@ public class BossTimerComponent extends HudComponent {
         if (remainingTime <= 0) {
             bossNameComponent.nextBoss();
             startTimer(TIMER_DURATION);
-            bossTimerClient.saveTimestamp();
+            bossTimerClient.saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), endTime);
         } else {
             startTimer(remainingTime);
         }
@@ -77,7 +92,7 @@ public class BossTimerComponent extends HudComponent {
                 remainingTime = 0;
                 bossNameComponent.nextBoss();
                 startTimer(TIMER_DURATION);
-                bossTimerClient.saveTimestamp();
+                bossTimerClient.saveTimestamp(bossNameComponent.getBossNames().get(bossNameComponent.currentBossIndex).getString(), endTime);
             }
 
             int minutes = (int) (remainingTime / 60000);

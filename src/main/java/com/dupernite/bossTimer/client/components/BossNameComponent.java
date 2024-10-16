@@ -50,7 +50,7 @@ public class BossNameComponent extends HudComponent {
     public void setStartTime(long startTime) {
         this.startTime = startTime;
         this.timerStarted = true;
-        updateCurrentBoss();
+        updateCurrentBoss(0);
     }
 
     public void setCurrentBoss(String bossName) {
@@ -62,21 +62,18 @@ public class BossNameComponent extends HudComponent {
         }
     }
 
-    private void updateCurrentBoss() {
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        int elapsedCycles = (int) (elapsedTime / (40 * 60 * 1000));
-        currentBossIndex = elapsedCycles % bossNames.size();
+    public void updateCurrentBoss(int elapsedCycles) {
+        currentBossIndex = (currentBossIndex + elapsedCycles) % bossNames.size();
     }
 
     @Override
     public void render(DrawContext drawContext, int x, int y) {
         if (!timerStarted) {
-            return;
+            return; // Do not render if the timer is not started
         }
 
         TextRenderer textRenderer = client.textRenderer;
-        Text bossName = bossNames.get(currentBossIndex);
-        Text text = Text.literal("Name: ").append(bossName);
+        Text text = bossNames.get(currentBossIndex);
 
         int textWidth = textRenderer.getWidth(text);
         int textHeight = textRenderer.fontHeight;
