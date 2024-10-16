@@ -31,11 +31,13 @@ public class BossTimerComponent extends HudComponent {
         this.endTime = System.currentTimeMillis() + TIMER_DURATION;
         this.timerStarted = true;
         bossNameComponent.reset();
+        bossTimerClient.saveTimestamp();
     }
 
     public void restartTimer() {
         this.endTime = System.currentTimeMillis() + TIMER_DURATION;
         this.timerStarted = true;
+        bossTimerClient.saveTimestamp();
     }
 
     public void changePosition() {
