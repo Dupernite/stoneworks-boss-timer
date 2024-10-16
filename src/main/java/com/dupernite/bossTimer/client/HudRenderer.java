@@ -22,7 +22,7 @@ public class HudRenderer implements HudRenderCallback {
     }
 
     @Override
-    public void onHudRender(DrawContext drawContext, RenderTickCounter renderTickCounter) {
+    public void onHudRender(DrawContext drawContext, float v) {
         if (!hudVisible) {
             return;
         }
